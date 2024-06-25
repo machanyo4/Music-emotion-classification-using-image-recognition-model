@@ -13,27 +13,52 @@ from sklearn.model_selection import train_test_split
 
 # データセットパスとモデルパス
 dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/"
-sets = '1024s'
-seed = 55
-model_path = "../model/Best_EfficientnetV2_" + sets + '_' + str(seed) + ".pth"
+sets = '2048s'
+seed = 11
+kind = "_decre90"
+model_path = "../model/Best_EfficientnetV2_" + sets + '_' + str(seed) + kind + ".pth"
 
 # ハイパーパラメータ
 batch_size = 64
 
 # 前処理
-transform = transforms.Compose([
-    # transforms.Grayscale(num_output_channels=3),
-    transforms.Resize((384, 384)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-])
+transform = transforms.Compose(
+    [
+        transforms.Resize((384,384)),
+        transforms.ToTensor(),
+        # grayscale 画像の場合
+        transforms.Grayscale(num_output_channels=1),
+        transforms.Normalize(mean=[0.5], std=[0.5]),
+        # calor 画像の場合
+        # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ]
+)
 
 test_datasets = MusicDatasets(dataset_path, sets, transform=transform, train=False, random_seed=seed)
 test_loader = DataLoader(dataset = test_datasets, batch_size=batch_size, shuffle=False)
 
 # モデルの構築
-# model = efficientnet_v2_s(weights=None, num_classes=4)
-model = efficientnet_v2_s(num_classes=4)
+model = efficientnet_v2_s(weights=None, num_classes=4)
+model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
+
+# モデルの最初の畳み込み層を変更する
+first_conv_layer = model.features[0][0]
+new_first_conv_layer = nn.Conv2d(
+    in_channels=1,
+    out_channels=first_conv_layer.out_channels,
+    kernel_size=first_conv_layer.kernel_size,
+    stride=first_conv_layer.stride,
+    padding=first_conv_layer.padding,
+    bias=first_conv_layer.bias
+)
+# 重みを初期化する（3ch の平均値を使用）
+new_first_conv_layer.weight.data = torch.mean(first_conv_layer.weight.data, dim=1, keepdim=True)
+# 新しい最初の畳み込み層をモデルに置き換える
+model.features[0][0] = new_first_conv_layer
+
+# 自作モデルの場合
+# model = efficientnet_v2_s(num_classes=4)
+
 model.load_state_dict(torch.load(model_path))
 
 # デバイスの指定
@@ -83,4 +108,4 @@ plt.title('Confusion Matrix (Percentage)')
 plt.show()
 
 # 混同行列の保存
-plt.savefig('../result/confusion_matrix_' + sets + '_' + str(seed) + '.png')
+plt.savefig('../result/confusion_matrix_' + sets + '_' + str(seed) + kind + '.png')

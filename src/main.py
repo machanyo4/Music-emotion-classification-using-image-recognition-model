@@ -5,26 +5,29 @@ import random
 from PIL import Image
 from dataset import MusicDatasets
 import torch.nn as nn
-import torch.optim as optim
 from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
 from pathlib import Path
-# from torchvision.models import efficientnet_v2_s
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, random_split
 from torchvision import datasets, transforms
+import torch.optim as optim
+from torch.optim import lr_scheduler
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-from torch.utils.data import random_split
 from collections import Counter
 from sklearn.model_selection import train_test_split
-from architect.efficientnet_v2_s_test import efficientnet_v2_s
+# 既存モデルの使用
+from torchvision.models import efficientnet_v2_s
+# 独自モデルの使用
+# from architect.efficientnet_v2_s_mine import efficientnet_v2_s
 
 # Dir_Path
 dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/"
 os.makedirs('../result', exist_ok=True)
 os.makedirs('../model', exist_ok=True)
-sets = '1024s'
-seed = 55
+sets = '2048s'
+seed = 11
+kind = "_decre90"
 
 # ハイパーパラメータ
 batch_size = 64
@@ -35,10 +38,13 @@ num_epochs = 50
 # データセットの読み込みと前処理
 transform = transforms.Compose(
     [
-        # transforms.Grayscale(num_output_channels=3),
         transforms.Resize((384,384)),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        # grayscale 画像の場合
+        transforms.Grayscale(num_output_channels=1),
+        transforms.Normalize(mean=[0.5], std=[0.5]),
+        # calor 画像の場合
+        # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ]
 )
 
@@ -53,11 +59,29 @@ valid_loader = DataLoader(dataset = valid_datasets, batch_size=batch_size, shuff
 test_loader = DataLoader(dataset = test_datasets, batch_size=batch_size, shuffle=False)
 
 # モデルの構築
-# model = efficientnet_v2_s(weights=None)  # 'IMAGENET1K_V1'
-# model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
-model = efficientnet_v2_s(num_classes=4)
+# 既存モデルの場合
+model = efficientnet_v2_s(weights='IMAGENET1K_V1')  # 'IMAGENET1K_V1'
+model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 
-print('model : ', model)
+# モデルの最初の畳み込み層を変更する
+first_conv_layer = model.features[0][0]
+new_first_conv_layer = nn.Conv2d(
+    in_channels=1,
+    out_channels=first_conv_layer.out_channels,
+    kernel_size=first_conv_layer.kernel_size,
+    stride=first_conv_layer.stride,
+    padding=first_conv_layer.padding,
+    bias=first_conv_layer.bias
+)
+# 重みを初期化する（3ch の平均値を使用）
+new_first_conv_layer.weight.data = torch.mean(first_conv_layer.weight.data, dim=1, keepdim=True)
+# 新しい最初の畳み込み層をモデルに置き換える
+model.features[0][0] = new_first_conv_layer
+
+# 自作モデルの場合
+# model = efficientnet_v2_s(num_classes=4)
+
+# print('model : ', model)
 
 # デバイスの指定
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -76,10 +100,13 @@ valid_loss_list = []
 train_acc_list = []
 valid_acc_list = []
 
-# 最高のテスト精度を保存する変数
-best_valid_accuracy = 0.0  
-best_train_accuracy = 0.0  # 最高の訓練精度を保存する変数
-best_epoch = 0  # 最高のテスト精度を達成したエポックを保存する変数
+# # 最高のテスト精度を保存する変数
+# best_valid_accuracy = 0.0  
+# best_train_accuracy = 0.0  # 最高の訓練精度を保存する変数
+# best_epoch = 0  # 最高のテスト精度を達成したエポックを保存する変数
+
+# 学習スケジューラー LambdaLR
+scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: 0.90 ** epoch)
 
 # 学習のループ
 for epoch in range(num_epochs):
@@ -131,20 +158,29 @@ for epoch in range(num_epochs):
     valid_loss_list.append(valid_loss)
     valid_acc_list.append(valid_accuracy)
 
+    # 学習率の取得
+    lr = scheduler.get_last_lr()[0]
+
     # 結果の表示
     print(f'Epoch [{epoch + 1}/{num_epochs}], Train Loss: {train_loss:.4f}, Train Acc: {train_accuracy:.2f}%, '
-          f'Valid Loss: {valid_loss:.4f}, Valid Acc: {valid_accuracy:.2f}%')
+          f'Valid Loss: {valid_loss:.4f}, Valid Acc: {valid_accuracy:.2f}%, LR: {lr:.6f}')
     
+    scheduler.step()
+    # # 最高の精度を持つモデルを保存
+    # if valid_accuracy > best_valid_accuracy or (valid_accuracy == best_valid_accuracy and train_accuracy > best_train_accuracy):
+    #     best_valid_accuracy = valid_accuracy
+    #     best_train_accuracy = train_accuracy
+    #     best_epoch = epoch
+    #     torch.save(model.state_dict(), '../model/Best_EfficientnetV2_' + sets + '_' + str(seed) + kind + '.pth')
 
-    # 最高の精度を持つモデルを保存
-    if valid_accuracy > best_valid_accuracy or (valid_accuracy == best_valid_accuracy and train_accuracy > best_train_accuracy):
+    # 最終epochのモデルを保存
+    if epoch + 1 == num_epochs:
+        torch.save(model.state_dict(), '../model/Best_EfficientnetV2_' + sets + '_' + str(seed) + kind + '.pth')
         best_valid_accuracy = valid_accuracy
-        best_train_accuracy = train_accuracy
         best_epoch = epoch
-        torch.save(model.state_dict(), '../model/Best_EfficientnetV2_' + sets + '_' + str(seed) + '_none_mine.pth')
 
 # 最終的な結果の表示
-print(f"Best Valid Accuracy of {best_valid_accuracy:.2f}% achieved at Epoch {best_epoch + 1}. Model saved.")
+print(f"Valid Accuracy of {best_valid_accuracy:.2f}% achieved at Epoch {best_epoch + 1}. Model saved.")
 
 # グラフの表示
 plt.figure(figsize=(12, 4))
@@ -161,5 +197,5 @@ plt.plot(valid_acc_list, label='Valid Accuracy')
 plt.title('Accuracies')
 plt.xlabel('Epochs')
 plt.legend()
-plt.savefig('../result/training_results_' + sets + '_' + str(seed) + '_none_mine.png')
+plt.savefig('../result/training_results_' + sets + '_' + str(seed) + kind + '.png')
 plt.show()

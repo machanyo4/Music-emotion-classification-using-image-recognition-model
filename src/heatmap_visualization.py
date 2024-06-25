@@ -7,6 +7,7 @@ from torchvision import transforms
 from torchvision.models import efficientnet_v2_s
 from torchvision.models.feature_extraction import get_graph_node_names, create_feature_extractor
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 import seaborn as sns
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -114,6 +115,8 @@ def show_cam_on_image(img, mask):
 
 class_names = ['Q1', 'Q2', 'Q3', 'Q4']  # クラス名を定義
 
+
+# 別々で出力
 for class_idx, img_tensors in correct_images.items():
     for idx, img_tensor in enumerate(img_tensors):
         img = img_tensor.squeeze().cpu().numpy().transpose(1, 2, 0)
@@ -122,15 +125,63 @@ for class_idx, img_tensors in correct_images.items():
         heatmap = grad_cam(model, img_tensor, 'features')  # 修正された特徴マップ層
         cam_img = show_cam_on_image(img, heatmap)
 
-        fig, ax = plt.subplots()
-        cax = ax.imshow(cam_img)
-        fig.colorbar(cax, ax=ax)
+        # 元画像を保存
+        plt.figure(figsize=(5, 5))
+        plt.imshow(img)
+        plt.title(f'Original Image {class_names[class_idx]}', fontsize=16)
+        plt.xlabel('Time', fontsize=14)
+        plt.ylabel('Frequency', fontsize=14)
+        x_ticks = np.arange(0, 385, 64)
+        y_ticks = np.arange(0, 385, 64)  # 0から384までの範囲で64ピクセルごとのメモリ位置を設定
+        plt.xticks(x_ticks, labels=x_ticks)
+        plt.yticks(y_ticks, labels=y_ticks[::-1])  # 縦軸のメモリの数字を逆転
+        plt.savefig(f'../result/heatmap/original_class_{class_names[class_idx]}_{idx}.png', bbox_inches='tight')
+        plt.close()
+
+        # ヒートマップを保存
+        # ヒートマップを保存
+        fig, ax = plt.subplots(figsize=(5, 5))  # 画像サイズはそのまま
+        im = ax.imshow(heatmap, cmap='jet')  # ヒートマップのみを表示
+        ax.set_title(f'Grad-CAM {class_names[class_idx]}', fontsize=16)
+        ax.set_xlabel('Time', fontsize=14)
+        ax.set_ylabel('Frequency', fontsize=14)
         
-        ax.set_title(f'Grad-CAM for Class {class_names[class_idx]}')
-        ax.set_xlabel('Time')
-        ax.set_ylabel('Frequency')
+        # 横軸と縦軸のメモリを64刻みに設定し、0~384の範囲で表示
+        x_ticks = np.arange(0, 385, 64)
+        y_ticks = np.arange(0, 385, 64)
+        ax.set_xticks(x_ticks)
+        ax.set_xticklabels(x_ticks)
+        ax.set_yticks(y_ticks)
+        ax.set_yticklabels(y_ticks[::-1])  # 縦軸のメモリの数字を逆転
         
-        plt.savefig(f'../result/heatmap/grad_cam_class_{class_names[class_idx]}_{idx}.png')
-        plt.show()
+        # カラーバーをグラフと同じ高さに設定
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        plt.colorbar(im, cax=cax)
+        
+        plt.subplots_adjust(left=0.2, right=0.9, top=0.9, bottom=0.1)  # 左マージンを増やして右寄せ
+        plt.savefig(f'../result/heatmap/heatmap_class_{class_names[class_idx]}_{idx}.png', bbox_inches='tight')
+        plt.close()
+
+
+# 重ねて出力
+# for class_idx, img_tensors in correct_images.items():
+#     for idx, img_tensor in enumerate(img_tensors):
+#         img = img_tensor.squeeze().cpu().numpy().transpose(1, 2, 0)
+#         img = np.clip(img * 0.229 + 0.485, 0, 1)  # Undo normalization
+
+#         heatmap = grad_cam(model, img_tensor, 'features')  # 修正された特徴マップ層
+#         cam_img = show_cam_on_image(img, heatmap)
+
+#         fig, ax = plt.subplots()
+#         cax = ax.imshow(cam_img)
+#         fig.colorbar(cax, ax=ax)
+        
+#         ax.set_title(f'Grad-CAM for Class {class_names[class_idx]}')
+#         ax.set_xlabel('Time')
+#         ax.set_ylabel('Frequency')
+        
+#         plt.savefig(f'../result/heatmap/grad_cam_class_{class_names[class_idx]}_{idx}.png')
+#         plt.show()
 
 print("[LOG] Successfully created heat maps.")
