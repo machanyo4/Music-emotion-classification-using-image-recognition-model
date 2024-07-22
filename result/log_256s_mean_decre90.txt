@@ -8,9 +8,9 @@
 [LOG] Complete parameter adaptation from ../model/Best_EfficientnetV2_256s_44_decre90.pth .
 [LOG] Using device: cuda
 [LOG] Complete parameter adaptation from ../model/Best_EfficientnetV2_256s_55_decre90.pth .
-Mean Accuracy: 92.89%
+Mean Accuracy: 93.89%
 --- Mean Confusion Matrix ---
-[[208.4   8.    2.8   5.8]
- [  2.2 220.6   1.    1.2]
- [  6.6   2.2 201.2  15. ]
- [  5.2   2.2  11.8 205.8]]
+[[2.132e+02 7.600e+00 2.200e+00 2.000e+00]
+ [3.800e+00 2.204e+02 6.000e-01 2.000e-01]
+ [5.200e+00 3.600e+00 2.032e+02 1.300e+01]
+ [4.400e+00 1.000e+00 1.140e+01 2.082e+02]]

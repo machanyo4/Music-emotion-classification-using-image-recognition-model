@@ -27,10 +27,10 @@ transform = transforms.Compose(
         transforms.Resize((384,384)),
         transforms.ToTensor(),
         # grayscale 画像の場合
-        transforms.Grayscale(num_output_channels=1),
-        transforms.Normalize(mean=[0.5], std=[0.5]),
+        # transforms.Grayscale(num_output_channels=1),
+        # transforms.Normalize(mean=[0.5], std=[0.5]),
         # calor 画像の場合
-        # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ]
 )
 
@@ -47,20 +47,22 @@ for index, model_path in enumerate(model_paths):
     model = efficientnet_v2_s(weights=None, num_classes=4)
     model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 
-    # モデルの最初の畳み込み層を変更する
-    first_conv_layer = model.features[0][0]
-    new_first_conv_layer = nn.Conv2d(
-        in_channels=1,
-        out_channels=first_conv_layer.out_channels,
-        kernel_size=first_conv_layer.kernel_size,
-        stride=first_conv_layer.stride,
-        padding=first_conv_layer.padding,
-        bias=first_conv_layer.bias
-    )
-    # 重みを初期化する（3ch の平均値を使用）
-    new_first_conv_layer.weight.data = torch.mean(first_conv_layer.weight.data, dim=1, keepdim=True)
-    # 新しい最初の畳み込み層をモデルに置き換える
-    model.features[0][0] = new_first_conv_layer
+    #--- 1ch -----------------------------------------------------------------------------------------
+    # # モデルの最初の畳み込み層を変更する
+    # first_conv_layer = model.features[0][0]
+    # new_first_conv_layer = nn.Conv2d(
+    #     in_channels=1,
+    #     out_channels=first_conv_layer.out_channels,
+    #     kernel_size=first_conv_layer.kernel_size,
+    #     stride=first_conv_layer.stride,
+    #     padding=first_conv_layer.padding,
+    #     bias=first_conv_layer.bias
+    # )
+    # # 重みを初期化する（3ch の平均値を使用）
+    # new_first_conv_layer.weight.data = torch.mean(first_conv_layer.weight.data, dim=1, keepdim=True)
+    # # 新しい最初の畳み込み層をモデルに置き換える
+    # model.features[0][0] = new_first_conv_layer
+#--------------------------------------------------------------------------------------------------
 
     # 自作モデルの場合
     # model = efficientnet_v2_s(num_classes=4)
