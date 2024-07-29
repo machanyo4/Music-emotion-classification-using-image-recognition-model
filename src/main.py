@@ -20,14 +20,16 @@ from sklearn.model_selection import train_test_split
 from torchvision.models import efficientnet_v2_s
 # 独自モデルの使用
 # from architect.efficientnet_v2_s_mine import efficientnet_v2_s
+#　1ch適応モジュールの読み込み
+from architect.adjust1ch import update_model_channels
 
 # Dir_Path
 dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/"
 os.makedirs('../result', exist_ok=True)
 os.makedirs('../model', exist_ok=True)
-sets = '2048s'
+sets = '1024s'
 seed = 55
-kind = "_decre90"
+kind = "_gray1chs_decre90"
 
 # ハイパーパラメータ
 batch_size = 64
@@ -41,10 +43,10 @@ transform = transforms.Compose(
         transforms.Resize((384,384)),
         transforms.ToTensor(),
         # grayscale 画像の場合
-        # transforms.Grayscale(num_output_channels=1),
-        # transforms.Normalize(mean=[0.5], std=[0.5]),
+        transforms.Grayscale(num_output_channels=1),
+        transforms.Normalize(mean=[0.5], std=[0.5]),
         # calor 画像の場合
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ]
 )
 
@@ -64,30 +66,28 @@ model = efficientnet_v2_s(weights='IMAGENET1K_V1')  # 'IMAGENET1K_V1'
 model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 
 
-#--- 1ch -----------------------------------------------------------------------------------------
-# # グレースケール対応のため、全畳み込み層を変更
-# def convert_to_grayscale(model):
-#     for layer in model.features:
-#         if isinstance(layer[0], nn.Conv2d) and layer[0].in_channels == 3:
-#             conv_layer = layer[0]
-#             new_conv_layer = nn.Conv2d(
-#                 in_channels=1,
-#                 out_channels=conv_layer.out_channels,
-#                 kernel_size=conv_layer.kernel_size,
-#                 stride=conv_layer.stride,
-#                 padding=conv_layer.padding,
-#                 bias=conv_layer.bias
-#             )
-#             new_conv_layer.weight.data = torch.mean(conv_layer.weight.data, dim=1, keepdim=True)
-#             layer[0] = new_conv_layer
-
-# convert_to_grayscale(model)
-#--------------------------------------------------------------------------------------------------
+#--- 1ch ------------------------------
+model = update_model_channels(model)
+#-------------------------------------
 
 # 自作モデルの場合
 # model = efficientnet_v2_s(num_classes=4)
 
 # print('model : ', model)
+
+# # 全ての畳み込み層の入力チャネル数を確認
+# def check_conv_layers(model):
+#     for name, module in model.named_modules():
+#         if isinstance(module, nn.Conv2d):
+#             print(f"{name}: in_channels={module.in_channels}, out_channels={module.out_channels}")
+
+# check_conv_layers(model)
+
+# パラメータ数の表示
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+print(f"Total number of trainable parameters: {count_parameters(model):,}")
 
 # デバイスの指定
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -169,9 +169,12 @@ for epoch in range(num_epochs):
 
     # 結果の表示
     print(f'Epoch [{epoch + 1}/{num_epochs}], Train Loss: {train_loss:.4f}, Train Acc: {train_accuracy:.2f}%, '
-          f'Valid Loss: {valid_loss:.4f}, Valid Acc: {valid_accuracy:.2f}%, LR: {lr:.6f}')
+          f'Valid Loss: {valid_loss:.4f}, Valid Acc: {valid_accuracy:.2f}%, LR: {lr:.6f}') #, LR: {lr:.6f}
     
+
     scheduler.step()
+
+
     # # 最高の精度を持つモデルを保存
     # if valid_accuracy > best_valid_accuracy or (valid_accuracy == best_valid_accuracy and train_accuracy > best_train_accuracy):
     #     best_valid_accuracy = valid_accuracy
