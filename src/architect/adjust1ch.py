@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torchvision.models import efficientnet_v2_s
 
 def adjust_channels(layer, scale_factor=1/3):
     """
@@ -58,3 +59,25 @@ def update_model_channels(model, scale_factor=1/3):
     adjust_classifier(model, scale_factor)
     
     return model
+
+model = efficientnet_v2_s(weights='IMAGENET1K_V1')  # 'IMAGENET1K_V1'
+model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
+
+
+#--- 1ch ------------------------------
+model = update_model_channels(model)
+#-------------------------------------
+
+print('model : ', model)
+
+# 全ての畳み込み層の入力チャネル数を確認
+def check_conv_layers(model):
+    for name, module in model.named_modules():
+        if isinstance(module, nn.Conv2d):
+            print(f"{name}: in_channels={module.in_channels}, out_channels={module.out_channels}")
+
+check_conv_layers(model)
+
+# パラメータ数の表示
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)

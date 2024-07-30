@@ -14,7 +14,7 @@ from architect.adjust1ch import update_model_channels
 
 # データセットパスとモデルパス
 dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/"
-sets = '1024s'
+sets = '2048s'
 seed = 55
 kind = "_gray1chs_decre90"
 model_path = "../model/Best_EfficientnetV2_" + sets + '_' + str(seed) + kind + ".pth"

@@ -27,7 +27,7 @@ from architect.adjust1ch import update_model_channels
 dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/"
 os.makedirs('../result', exist_ok=True)
 os.makedirs('../model', exist_ok=True)
-sets = '1024s'
+sets = '2048s'
 seed = 55
 kind = "_gray1chs_decre90"
 
