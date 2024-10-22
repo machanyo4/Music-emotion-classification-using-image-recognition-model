@@ -29,7 +29,7 @@ os.makedirs('../result', exist_ok=True)
 os.makedirs('../model', exist_ok=True)
 sets = '2048s'
 seed = 55
-kind = "_gray1chs_decre90"
+kind = "_gray1chs_pl_decre90"
 
 # ハイパーパラメータ
 batch_size = 64
@@ -42,10 +42,13 @@ transform = transforms.Compose(
     [
         transforms.Resize((384,384)),
         transforms.ToTensor(),
-        # grayscale 画像の場合
+        # grayscale1ch 画像の場合----
         transforms.Grayscale(num_output_channels=1),
         transforms.Normalize(mean=[0.5], std=[0.5]),
-        # calor 画像の場合
+        # grayscale3ch 画像の場合---
+        # transforms.Grayscale(num_output_channels=3),
+        # transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+        # calor 画像の場合---
         # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ]
 )
@@ -62,12 +65,15 @@ test_loader = DataLoader(dataset = test_datasets, batch_size=batch_size, shuffle
 
 # モデルの構築
 # 既存モデルの場合
-model = efficientnet_v2_s(weights='IMAGENET1K_V1')  # 'IMAGENET1K_V1'
-model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
+model = efficientnet_v2_s(weights=None)  # 'IMAGENET1K_V1'
+# model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 
 
 #--- 1ch ------------------------------
 model = update_model_channels(model)
+plmodel_path = '/local/home/matsubara/EfficientNetV2_music_emotion_ctlex/model/prior/imagenet_priorln.pth'
+model.load_state_dict(torch.load(plmodel_path))
+model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 #-------------------------------------
 
 # 自作モデルの場合
@@ -84,10 +90,10 @@ model = update_model_channels(model)
 # check_conv_layers(model)
 
 # パラメータ数の表示
-def count_parameters(model):
-    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+# def count_parameters(model):
+#     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-print(f"Total number of trainable parameters: {count_parameters(model):,}")
+# print(f"Total number of trainable parameters: {count_parameters(model):,}")
 
 # デバイスの指定
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

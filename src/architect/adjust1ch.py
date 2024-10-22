@@ -68,7 +68,7 @@ model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新し�
 model = update_model_channels(model)
 #-------------------------------------
 
-print('model : ', model)
+# print('model : ', model)
 
 # 全ての畳み込み層の入力チャネル数を確認
 def check_conv_layers(model):
@@ -76,7 +76,7 @@ def check_conv_layers(model):
         if isinstance(module, nn.Conv2d):
             print(f"{name}: in_channels={module.in_channels}, out_channels={module.out_channels}")
 
-check_conv_layers(model)
+# check_conv_layers(model)
 
 # パラメータ数の表示
 def count_parameters(model):

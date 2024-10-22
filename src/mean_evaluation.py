@@ -13,8 +13,8 @@ from architect.adjust1ch import update_model_channels
 
 # データセットパスとモデルパス
 dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/"
-sets = "2048s"
-kind = "_gray1chs_decre90"
+sets = '2048s'
+kind = "_gray1chs_pl_decre90"
 base_path = "../model/Best_EfficientnetV2_" + sets
 seeds = [11, 22, 33, 44, 55]
 model_paths = [base_path + '_' + str(i) + kind + '.pth' for i in seeds]
@@ -27,10 +27,13 @@ transform = transforms.Compose(
     [
         transforms.Resize((384,384)),
         transforms.ToTensor(),
-        # grayscale 画像の場合
+        # grayscale 画像の場合---
         transforms.Grayscale(num_output_channels=1),
         transforms.Normalize(mean=[0.5], std=[0.5]),
-        # calor 画像の場合
+        # grayscale3ch 画像の場合---
+        # transforms.Grayscale(num_output_channels=3),
+        # transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+        # calor 画像の場合---
         # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ]
 )
@@ -45,11 +48,12 @@ for index, model_path in enumerate(model_paths):
     test_loader = DataLoader(dataset = test_datasets, batch_size=batch_size, shuffle=False)
 
     # モデルの構築
-    model = efficientnet_v2_s(weights=None, num_classes=4)
-    model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
+    model = efficientnet_v2_s(weights=None)
+    # model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 
     #--- 1ch -----------------------------------------------------------------------------------------
     model = update_model_channels(model)
+    model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
     #--------------------------------------------------------------------------------------------------
 
     # 自作モデルの場合
