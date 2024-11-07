@@ -11,6 +11,8 @@ from tqdm import tqdm
 import os
 #　1ch適応モジュールの読み込み
 from architect.adjust1ch import update_model_channels
+# input_1ch モジュールの読み込み
+from architect.input_1ch import modify_input_layer_to_grayscale
 
 # データセットパスを設定
 train_dir = "/local/home/Data/train"
@@ -19,7 +21,7 @@ val_dir = "/local/home/Data/val"
 # ハイパーパラメータ
 batch_size = 64
 learning_rate = 0.001
-num_epochs = 100
+num_epochs = 50
 
 # 結果保存ディレクトリ
 os.makedirs('../result/prior', exist_ok=True)
@@ -48,9 +50,9 @@ dataloaders = {
 
 
 # モデルの読み込み（EfficientNetV2）
-model = efficientnet_v2_s(weights=None)
+model = efficientnet_v2_s(weights='IMAGENET1K_V1')
 model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 1000)
-model = update_model_channels(model)
+model = modify_input_layer_to_grayscale(model)
 
 # デバイスの設定
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -118,7 +120,7 @@ for epoch in range(num_epochs):
 
     # モデル保存
     if epoch + 1 == num_epochs:
-        torch.save(model.state_dict(), f'../model/prior/imagenet_priorln.pth')
+        torch.save(model.state_dict(), f'../model/prior/imagenet_input1ch_priorln.pth')
 
 # グラフの表示
 plt.figure(figsize=(12, 4))
@@ -136,5 +138,44 @@ plt.title('Accuracies')
 plt.xlabel('Epochs')
 plt.legend()
 
-plt.savefig('../result/prior/training_results.png')
+plt.savefig('../result/prior/input1ch_training_results.png')
 plt.show()
+
+# 勾配分布を可視化する関数
+def visualize_gradient_distribution(model, dataloader, device, save_path='../result/prior/raw_gradient_distribution.png'):
+    model.train()  # 勾配を計算するために訓練モードに変更
+    optimizer.zero_grad()  # 勾配を初期化
+
+    # 1バッチだけデータを使って勾配を計算
+    inputs, labels = next(iter(dataloader))
+    inputs, labels = inputs.to(device), labels.to(device)
+    outputs = model(inputs)
+    loss = criterion(outputs, labels)
+    loss.backward()  # 勾配の計算
+
+    # 畳み込み層の勾配の大きさを取得
+    grad_magnitudes = []
+    for name, layer in model.named_modules():
+        if isinstance(layer, nn.Conv2d):
+            if layer.weight.grad is not None:
+                grad_magnitudes.append(layer.weight.grad.abs().cpu().numpy().flatten())
+
+    # すべての勾配を1つのリストにまとめる
+    grad_magnitudes = [grad for grad_list in grad_magnitudes for grad in grad_list]
+
+    # 勾配分布をヒストグラムとして可視化
+    plt.figure(figsize=(10, 6))
+    plt.hist(grad_magnitudes, bins=50, color='blue', alpha=0.7)
+    plt.title('Gradient Magnitude Distribution')
+    plt.xlabel('Gradient Magnitude')
+    plt.ylabel('Frequency')
+    
+    # グラフを保存
+    os.makedirs('../result/prior', exist_ok=True)
+    plt.savefig(save_path)
+    plt.show()
+
+    print(f"Gradient distribution saved to {save_path}")
+
+# モデルの学習ループ終了後に、フィルタの勾配分布を可視化して保存
+visualize_gradient_distribution(model, dataloaders['train'], device)

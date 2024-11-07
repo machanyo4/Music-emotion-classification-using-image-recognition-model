@@ -67,7 +67,7 @@ def save_spectrogram(save_path, db, signal):
 
 # サンプリング周波数・窓サイズ・オーバラップ率の設定
 sampling = 22050
-window_values = [508, 510, 512, 514, 515]
+window_values = [508, 510, 512, 514, 516]
 overlap_rate = 0.5
 
 # Q1データ

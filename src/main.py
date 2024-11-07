@@ -21,15 +21,16 @@ from torchvision.models import efficientnet_v2_s
 # 独自モデルの使用
 # from architect.efficientnet_v2_s_mine import efficientnet_v2_s
 #　1ch適応モジュールの読み込み
-from architect.adjust1ch import update_model_channels
+# from architect.adjust1ch import update_model_channels
+from architect.input_1ch import modify_input_layer_to_grayscale
 
 # Dir_Path
-dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/"
-os.makedirs('../result', exist_ok=True)
+dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/grayscale"
 os.makedirs('../model', exist_ok=True)
 sets = '2048s'
 seed = 55
-kind = "_gray1chs_pl_decre90"
+kind = "_input1ch_decre90"
+os.makedirs('../result', exist_ok=True)
 
 # ハイパーパラメータ
 batch_size = 64
@@ -65,20 +66,30 @@ test_loader = DataLoader(dataset = test_datasets, batch_size=batch_size, shuffle
 
 # モデルの構築
 # 既存モデルの場合
-model = efficientnet_v2_s(weights=None)  # 'IMAGENET1K_V1'
+# model = efficientnet_v2_s(weights=None)  # 'IMAGENET1K_V1'
 # model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 
-
-#--- 1ch ------------------------------
-model = update_model_channels(model)
-plmodel_path = '/local/home/matsubara/EfficientNetV2_music_emotion_ctlex/model/prior/imagenet_priorln.pth'
-model.load_state_dict(torch.load(plmodel_path))
+#--- input_1ch ------------------------------
+model = efficientnet_v2_s(weights='IMAGENET1K_V1')
+model = modify_input_layer_to_grayscale(model)
 model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 #-------------------------------------
 
-# 自作モデルの場合
-# model = efficientnet_v2_s(num_classes=4)
 
+#--- gray_1chs ------------------------------
+# model = efficientnet_v2_s(weights=None)
+# model = update_model_channels(model)
+# plmodel_path = '/local/home/matsubara/EfficientNetV2_music_emotion_ctlex/model/prior/imagenet_priorln.pth'
+# model.load_state_dict(torch.load(plmodel_path))
+# model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
+#-------------------------------------
+
+# --- 自作モデルの場合 ------------------
+# model = efficientnet_v2_s(num_classes=4)
+#----------------------------------------
+
+
+# --- モデルの確認 --------------------------
 # print('model : ', model)
 
 # # 全ての畳み込み層の入力チャネル数を確認
@@ -94,6 +105,8 @@ model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新し�
 #     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 # print(f"Total number of trainable parameters: {count_parameters(model):,}")
+# ----------------------------------------------------------------------------------
+
 
 # デバイスの指定
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

@@ -1,0 +1,16 @@
+[LOG] Using device: cuda
+[LOG] Complete parameter adaptation from ../model/Best_EfficientnetV2_512s_11_input1ch_decre90.pth .
+[LOG] Using device: cuda
+[LOG] Complete parameter adaptation from ../model/Best_EfficientnetV2_512s_22_input1ch_decre90.pth .
+[LOG] Using device: cuda
+[LOG] Complete parameter adaptation from ../model/Best_EfficientnetV2_512s_33_input1ch_decre90.pth .
+[LOG] Using device: cuda
+[LOG] Complete parameter adaptation from ../model/Best_EfficientnetV2_512s_44_input1ch_decre90.pth .
+[LOG] Using device: cuda
+[LOG] Complete parameter adaptation from ../model/Best_EfficientnetV2_512s_55_input1ch_decre90.pth .
+Mean Accuracy: 93.60%
+--- Mean Confusion Matrix ---
+[[2.100e+02 6.800e+00 4.400e+00 3.800e+00]
+ [2.400e+00 2.210e+02 0.000e+00 1.600e+00]
+ [7.200e+00 2.600e+00 2.030e+02 1.220e+01]
+ [5.200e+00 2.000e-01 1.120e+01 2.084e+02]]

@@ -10,11 +10,12 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 # from architect.efficientnet_v2_s_test import efficientnet_v2_s
 from architect.adjust1ch import update_model_channels
+from architect.input_1ch import modify_input_layer_to_grayscale
 
 # データセットパスとモデルパス
 dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/"
 sets = '2048s'
-kind = "_gray1chs_pl_decre90"
+kind = "_input1ch_decre90"
 base_path = "../model/Best_EfficientnetV2_" + sets
 seeds = [11, 22, 33, 44, 55]
 model_paths = [base_path + '_' + str(i) + kind + '.pth' for i in seeds]
@@ -51,9 +52,14 @@ for index, model_path in enumerate(model_paths):
     model = efficientnet_v2_s(weights=None)
     # model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 
-    #--- 1ch -----------------------------------------------------------------------------------------
-    model = update_model_channels(model)
+    #--- input_1ch ------------------------------
+    model = modify_input_layer_to_grayscale(model)
     model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
+    #-------------------------------------
+
+    #--- gray_1ch -----------------------------------------------------------------------------------------
+    # model = update_model_channels(model)
+    # model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
     #--------------------------------------------------------------------------------------------------
 
     # 自作モデルの場合
