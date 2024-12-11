@@ -13,9 +13,9 @@ from architect.adjust1ch import update_model_channels
 from architect.input_1ch import modify_input_layer_to_grayscale
 
 # データセットパスとモデルパス
-dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/"
+dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/grayscale"
 sets = '2048s'
-kind = "_input1ch_decre90"
+kind = "gray_raw_input1ch_decre90"
 base_path = "../model/Best_EfficientnetV2_" + sets
 seeds = [11, 22, 33, 44, 55]
 model_paths = [base_path + '_' + str(i) + kind + '.pth' for i in seeds]
@@ -114,11 +114,11 @@ conf_matrix_percent = mean_conf_matrix / mean_conf_matrix.sum(axis=1, keepdims=T
 # 混同行列の可視化（割合表示）
 class_names = ['Q1', 'Q2', 'Q3', 'Q4']
 plt.figure(figsize=(8, 6))
-sns.heatmap(conf_matrix_percent, annot=True, fmt='.2f', cmap='Blues', xticklabels=class_names, yticklabels=class_names)
-plt.xlabel('Predicted')
-plt.ylabel('True')
-plt.title('Confusion Matrix (Percentage)')
+sns.heatmap(conf_matrix_percent, annot=True, fmt='.2f', cmap='Blues', xticklabels=class_names, yticklabels=class_names,annot_kws={"size": 14})
+plt.xlabel('Predicted', fontsize=14)
+plt.ylabel('True', fontsize=14)
+plt.title('Confusion Matrix (Percentage)', fontsize=16)
 plt.show()
 
 # 混同行列の保存
-plt.savefig('../result/confusion_matrix_' + sets + '_' + 'mean' + kind  + '.png')
+plt.savefig('../result/' + kind + '/' + sets + '/confusion_matrix_' + sets + '_' + 'mean' + kind  + '.png')

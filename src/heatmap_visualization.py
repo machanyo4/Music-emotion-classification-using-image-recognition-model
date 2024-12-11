@@ -21,10 +21,10 @@ from architect.input_1ch import modify_input_layer_to_grayscale
 warnings.filterwarnings("ignore", category=UserWarning, module="torch")
 
 # データセットパスとモデルパス
-dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/"
-sets = '512s'
-seed = 44
-kind = "_decre90"
+dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/grayscale/" #grayscale/
+sets = '1024s'
+seed = 33
+kind = "gray_raw_input3ch_decre90"
 model_path = "../model/Best_EfficientnetV2_" + sets + '_' + str(seed) + kind + ".pth"
 
 # デバイスの指定
@@ -62,7 +62,7 @@ model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新し�
 # model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 #-------------------------------------
 
-#--- gray_1ch -----------------------------------------------------------------------------------------
+#--- gray_1chs -----------------------------------------------------------------------------------------
 # model = update_model_channels(model)
 # model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 #--------------------------------------------------------------------------------------------------
@@ -146,6 +146,9 @@ with torch.no_grad():
 
 # Grad-CAM の可視化と保存
 def show_cam_on_image(img, mask):
+    # グレースケール画像の場合、チャンネル数を3に拡張
+    if len(img.shape) == 2:  # (H, W) の場合
+        img = np.stack([img, img, img], axis=-1)  # (H, W, 3) に拡張
     heatmap = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
     heatmap = np.float32(heatmap) / 255
     cam = heatmap + np.float32(img)
@@ -157,8 +160,12 @@ class_names = ['Q1', 'Q2', 'Q3', 'Q4']  # クラス名を定義
 # 正しい予測画像の保存
 for class_idx, img_tensors in correct_images.items():
     for idx, img_tensor in enumerate(img_tensors):
+        # 3ch 画像の場合----
         img = img_tensor.squeeze().cpu().numpy().transpose(1, 2, 0)
         img = np.clip(img * 0.229 + 0.485, 0, 1)  # 正規化を元に戻す
+        # 1ch 画像の場合----
+        # img = img_tensor.squeeze().cpu().numpy()  # グレースケールは(H, W)
+        # img = np.clip(img * 0.5 + 0.5, 0, 1)  # 正規化を元に戻す
 
         heatmap = grad_cam(model, img_tensor, 'features')
         cam_img = show_cam_on_image(img, heatmap)
@@ -184,8 +191,12 @@ for class_idx, img_tensors in correct_images.items():
 # 誤った予測画像の保存
 for class_idx, img_tensors in incorrect_images.items():
     for idx, img_tensor in enumerate(img_tensors):
+        # 3ch 画像の場合----
         img = img_tensor.squeeze().cpu().numpy().transpose(1, 2, 0)
         img = np.clip(img * 0.229 + 0.485, 0, 1)  # 正規化を元に戻す
+        # 1ch 画像の場合----
+        # img = img_tensor.squeeze().cpu().numpy()  # グレースケールは(H, W)
+        # img = np.clip(img * 0.5 + 0.5, 0, 1)  # 正規化を元に戻す
 
         pred_label = incorrect_preds[class_idx][idx]
         heatmap = grad_cam(model, img_tensor, 'features')

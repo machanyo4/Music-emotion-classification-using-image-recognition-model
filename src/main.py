@@ -21,16 +21,16 @@ from torchvision.models import efficientnet_v2_s
 # 独自モデルの使用
 # from architect.efficientnet_v2_s_mine import efficientnet_v2_s
 #　1ch適応モジュールの読み込み
-# from architect.adjust1ch import update_model_channels
+from architect.adjust1ch import update_model_channels
 from architect.input_1ch import modify_input_layer_to_grayscale
 
 # Dir_Path
-dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/grayscale"
+dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/" #grayscale
 os.makedirs('../model', exist_ok=True)
-sets = '2048s'
+sets = '1536s'
 seed = 55
-kind = "_input1ch_decre90"
-os.makedirs('../result', exist_ok=True)
+kind = "color_decre90"
+os.makedirs('../result/' + kind + '/' + sets, exist_ok=True)
 
 # ハイパーパラメータ
 batch_size = 64
@@ -44,13 +44,13 @@ transform = transforms.Compose(
         transforms.Resize((384,384)),
         transforms.ToTensor(),
         # grayscale1ch 画像の場合----
-        transforms.Grayscale(num_output_channels=1),
-        transforms.Normalize(mean=[0.5], std=[0.5]),
+        # transforms.Grayscale(num_output_channels=1),
+        # transforms.Normalize(mean=[0.5], std=[0.5]),
         # grayscale3ch 画像の場合---
         # transforms.Grayscale(num_output_channels=3),
         # transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
         # calor 画像の場合---
-        # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ]
 )
 
@@ -66,21 +66,21 @@ test_loader = DataLoader(dataset = test_datasets, batch_size=batch_size, shuffle
 
 # モデルの構築
 # 既存モデルの場合
-# model = efficientnet_v2_s(weights=None)  # 'IMAGENET1K_V1'
-# model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
+model = efficientnet_v2_s(weights='IMAGENET1K_V1')  # 'IMAGENET1K_V1'
+model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 
 #--- input_1ch ------------------------------
-model = efficientnet_v2_s(weights='IMAGENET1K_V1')
-model = modify_input_layer_to_grayscale(model)
-model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
+# model = efficientnet_v2_s(weights='IMAGENET1K_V1')
+# model = modify_input_layer_to_grayscale(model)
+# model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 #-------------------------------------
 
 
 #--- gray_1chs ------------------------------
 # model = efficientnet_v2_s(weights=None)
 # model = update_model_channels(model)
-# plmodel_path = '/local/home/matsubara/EfficientNetV2_music_emotion_ctlex/model/prior/imagenet_priorln.pth'
-# model.load_state_dict(torch.load(plmodel_path))
+# # plmodel_path = '/local/home/matsubara/EfficientNetV2_music_emotion_ctlex/model/prior/imagenet_priorln.pth'
+# # model.load_state_dict(torch.load(plmodel_path))
 # model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 #-------------------------------------
 
@@ -225,5 +225,5 @@ plt.plot(valid_acc_list, label='Valid Accuracy')
 plt.title('Accuracies')
 plt.xlabel('Epochs')
 plt.legend()
-plt.savefig('../result/training_results_' + sets + '_' + str(seed) + kind + '.png')
+plt.savefig('../result/' + kind + '/' + sets + '/training_results_' + sets + '_' + str(seed) + kind + '.png')
 plt.show()

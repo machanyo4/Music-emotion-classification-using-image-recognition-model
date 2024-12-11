@@ -1,0 +1,60 @@
+Using device: cuda
+Epoch [1/50], Train Loss: 1.1390, Train Acc: 43.37%, Valid Loss: 1.3166, Valid Acc: 31.11%, LR: 0.001000
+Epoch [2/50], Train Loss: 0.9933, Train Acc: 51.15%, Valid Loss: 1.4631, Valid Acc: 46.67%, LR: 0.000900
+Epoch [3/50], Train Loss: 0.9482, Train Acc: 54.79%, Valid Loss: 0.9219, Valid Acc: 57.08%, LR: 0.000810
+Epoch [4/50], Train Loss: 0.8661, Train Acc: 59.44%, Valid Loss: 0.8919, Valid Acc: 58.89%, LR: 0.000729
+Epoch [5/50], Train Loss: 0.7932, Train Acc: 63.58%, Valid Loss: 0.9360, Valid Acc: 56.94%, LR: 0.000656
+Epoch [6/50], Train Loss: 0.6625, Train Acc: 71.39%, Valid Loss: 0.9359, Valid Acc: 59.72%, LR: 0.000590
+Epoch [7/50], Train Loss: 0.5684, Train Acc: 76.15%, Valid Loss: 1.1570, Valid Acc: 55.97%, LR: 0.000531
+Epoch [8/50], Train Loss: 0.4668, Train Acc: 80.17%, Valid Loss: 0.5698, Valid Acc: 73.19%, LR: 0.000478
+Epoch [9/50], Train Loss: 0.3554, Train Acc: 85.62%, Valid Loss: 0.4237, Valid Acc: 81.94%, LR: 0.000430
+Epoch [10/50], Train Loss: 0.2842, Train Acc: 89.17%, Valid Loss: 0.5003, Valid Acc: 83.33%, LR: 0.000387
+Epoch [11/50], Train Loss: 0.2599, Train Acc: 89.86%, Valid Loss: 0.3341, Valid Acc: 87.50%, LR: 0.000349
+Epoch [12/50], Train Loss: 0.1675, Train Acc: 94.03%, Valid Loss: 0.7022, Valid Acc: 76.25%, LR: 0.000314
+Epoch [13/50], Train Loss: 0.1550, Train Acc: 94.69%, Valid Loss: 0.2932, Valid Acc: 90.28%, LR: 0.000282
+Epoch [14/50], Train Loss: 0.0962, Train Acc: 96.84%, Valid Loss: 0.6337, Valid Acc: 82.22%, LR: 0.000254
+Epoch [15/50], Train Loss: 0.0965, Train Acc: 96.94%, Valid Loss: 0.2457, Valid Acc: 91.25%, LR: 0.000229
+Epoch [16/50], Train Loss: 0.0735, Train Acc: 97.71%, Valid Loss: 0.1569, Valid Acc: 94.31%, LR: 0.000206
+Epoch [17/50], Train Loss: 0.0514, Train Acc: 98.54%, Valid Loss: 0.1639, Valid Acc: 94.31%, LR: 0.000185
+Epoch [18/50], Train Loss: 0.0572, Train Acc: 98.30%, Valid Loss: 0.2205, Valid Acc: 93.19%, LR: 0.000167
+Epoch [19/50], Train Loss: 0.0437, Train Acc: 98.99%, Valid Loss: 0.1756, Valid Acc: 93.89%, LR: 0.000150
+Epoch [20/50], Train Loss: 0.0443, Train Acc: 98.58%, Valid Loss: 0.2078, Valid Acc: 94.58%, LR: 0.000135
+Epoch [21/50], Train Loss: 0.0415, Train Acc: 98.82%, Valid Loss: 0.1709, Valid Acc: 95.42%, LR: 0.000122
+Epoch [22/50], Train Loss: 0.0350, Train Acc: 99.03%, Valid Loss: 0.1489, Valid Acc: 95.28%, LR: 0.000109
+Epoch [23/50], Train Loss: 0.0334, Train Acc: 99.10%, Valid Loss: 0.1615, Valid Acc: 95.56%, LR: 0.000098
+Epoch [24/50], Train Loss: 0.0428, Train Acc: 98.68%, Valid Loss: 0.1608, Valid Acc: 94.31%, LR: 0.000089
+Epoch [25/50], Train Loss: 0.0242, Train Acc: 99.44%, Valid Loss: 0.1343, Valid Acc: 95.00%, LR: 0.000080
+Epoch [26/50], Train Loss: 0.0332, Train Acc: 99.10%, Valid Loss: 0.1264, Valid Acc: 95.97%, LR: 0.000072
+Epoch [27/50], Train Loss: 0.0284, Train Acc: 99.06%, Valid Loss: 0.1351, Valid Acc: 95.97%, LR: 0.000065
+Epoch [28/50], Train Loss: 0.0356, Train Acc: 99.13%, Valid Loss: 0.1355, Valid Acc: 95.97%, LR: 0.000058
+Epoch [29/50], Train Loss: 0.0188, Train Acc: 99.51%, Valid Loss: 0.1304, Valid Acc: 96.39%, LR: 0.000052
+Epoch [30/50], Train Loss: 0.0315, Train Acc: 99.17%, Valid Loss: 0.1672, Valid Acc: 95.00%, LR: 0.000047
+Epoch [31/50], Train Loss: 0.0293, Train Acc: 99.06%, Valid Loss: 0.1394, Valid Acc: 95.83%, LR: 0.000042
+Epoch [32/50], Train Loss: 0.0199, Train Acc: 99.51%, Valid Loss: 0.1155, Valid Acc: 96.53%, LR: 0.000038
+Epoch [33/50], Train Loss: 0.0239, Train Acc: 99.27%, Valid Loss: 0.1235, Valid Acc: 95.69%, LR: 0.000034
+Epoch [34/50], Train Loss: 0.0205, Train Acc: 99.41%, Valid Loss: 0.1275, Valid Acc: 95.83%, LR: 0.000031
+Epoch [35/50], Train Loss: 0.0217, Train Acc: 99.44%, Valid Loss: 0.1296, Valid Acc: 95.69%, LR: 0.000028
+Epoch [36/50], Train Loss: 0.0242, Train Acc: 99.24%, Valid Loss: 0.1256, Valid Acc: 95.56%, LR: 0.000025
+Epoch [37/50], Train Loss: 0.0225, Train Acc: 99.44%, Valid Loss: 0.1360, Valid Acc: 95.69%, LR: 0.000023
+Epoch [38/50], Train Loss: 0.0232, Train Acc: 99.38%, Valid Loss: 0.1360, Valid Acc: 95.97%, LR: 0.000020
+Epoch [39/50], Train Loss: 0.0176, Train Acc: 99.55%, Valid Loss: 0.1225, Valid Acc: 95.97%, LR: 0.000018
+Epoch [40/50], Train Loss: 0.0183, Train Acc: 99.34%, Valid Loss: 0.1213, Valid Acc: 95.97%, LR: 0.000016
+Epoch [41/50], Train Loss: 0.0202, Train Acc: 99.51%, Valid Loss: 0.1332, Valid Acc: 95.42%, LR: 0.000015
+Epoch [42/50], Train Loss: 0.0195, Train Acc: 99.27%, Valid Loss: 0.1190, Valid Acc: 96.11%, LR: 0.000013
+Epoch [43/50], Train Loss: 0.0115, Train Acc: 99.72%, Valid Loss: 0.1236, Valid Acc: 96.25%, LR: 0.000012
+Epoch [44/50], Train Loss: 0.0190, Train Acc: 99.51%, Valid Loss: 0.1236, Valid Acc: 95.83%, LR: 0.000011
+Epoch [45/50], Train Loss: 0.0174, Train Acc: 99.55%, Valid Loss: 0.1329, Valid Acc: 95.69%, LR: 0.000010
+Epoch [46/50], Train Loss: 0.0213, Train Acc: 99.41%, Valid Loss: 0.1207, Valid Acc: 95.97%, LR: 0.000009
+Epoch [47/50], Train Loss: 0.0179, Train Acc: 99.58%, Valid Loss: 0.1258, Valid Acc: 96.11%, LR: 0.000008
+Epoch [48/50], Train Loss: 0.0179, Train Acc: 99.48%, Valid Loss: 0.1289, Valid Acc: 95.83%, LR: 0.000007
+Epoch [49/50], Train Loss: 0.0168, Train Acc: 99.69%, Valid Loss: 0.1195, Valid Acc: 96.39%, LR: 0.000006
+Epoch [50/50], Train Loss: 0.0180, Train Acc: 99.44%, Valid Loss: 0.1129, Valid Acc: 96.39%, LR: 0.000006
+Valid Accuracy of 96.39% achieved at Epoch 50. Model saved.
+[LOG] Using device: cuda
+[LOG] Complete parameter adaptation from ../model/Best_EfficientnetV2_1536s_33gray_raw_1chs_decre90.pth .
+Test Accuracy: 89.56%
+--- Confusion Matrix ---
+[[211   6   8   0]
+ [  8 217   0   0]
+ [ 14   5 192  14]
+ [ 12   1  26 186]]

@@ -9,15 +9,15 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 # from architect.efficientnet_v2_s_test import efficientnet_v2_s
-# from architect.adjust1ch import update_model_channels
+from architect.adjust1ch import update_model_channels
 from architect.input_1ch import modify_input_layer_to_grayscale
 
 
 # データセットパスとモデルパス
-dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/"
-sets = '2048s'
+dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/grayscale"
+sets = '1536s'
 seed = 55
-kind = "_input1ch_decre90"
+kind = "gray_raw_1chs_decre90"
 model_path = "../model/Best_EfficientnetV2_" + sets + '_' + str(seed) + kind + ".pth"
 
 # ハイパーパラメータ
@@ -47,13 +47,13 @@ model = efficientnet_v2_s(weights=None)
 # model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 
 #--- input_1ch ------------------------------
-model = modify_input_layer_to_grayscale(model)
-model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
+# model = modify_input_layer_to_grayscale(model)
+# model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 #-------------------------------------
 
-#--- gray_1ch -----------------------------------------------------------------------------------------
-# model = update_model_channels(model)
-# model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
+# #--- gray_1ch -----------------------------------------------------------------------------------------
+model = update_model_channels(model)
+model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 #--------------------------------------------------------------------------------------------------
 
 # 自作モデルの場合
@@ -117,4 +117,4 @@ plt.title('Confusion Matrix (Percentage)')
 plt.show()
 
 # 混同行列の保存
-plt.savefig('../result/confusion_matrix_' + sets + '_' + str(seed) + kind + '.png')
+plt.savefig('../result/' + kind + '/' + sets + '/confusion_matrix_' + sets + '_' + str(seed) + kind + '.png')
