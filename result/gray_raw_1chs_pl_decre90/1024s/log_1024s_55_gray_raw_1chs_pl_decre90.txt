@@ -1,0 +1,8 @@
+[LOG] Using device: cuda
+[LOG] Complete parameter adaptation from ../model/Best_EfficientnetV2_1024s_55gray_raw_1chs_pl_decre90.pth .
+Test Accuracy: 93.67%
+--- Confusion Matrix ---
+[[203   6   5  11]
+ [  6 219   0   0]
+ [  1   0 212  12]
+ [  3   0  13 209]]

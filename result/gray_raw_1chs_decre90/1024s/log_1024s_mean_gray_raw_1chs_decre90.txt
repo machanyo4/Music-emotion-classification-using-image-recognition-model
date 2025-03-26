@@ -14,3 +14,7 @@ Mean Accuracy: 90.98%
  [5.000e+00 2.182e+02 1.600e+00 2.000e-01]
  [9.800e+00 3.000e+00 1.990e+02 1.320e+01]
  [4.600e+00 1.800e+00 1.900e+01 1.996e+02]]
+Q1: Precision=0.92, Recall=0.90, F1-Score=0.91
+Q2: Precision=0.95, Recall=0.97, F1-Score=0.96
+Q3: Precision=0.87, Recall=0.89, F1-Score=0.88
+Q4: Precision=0.92, Recall=0.89, F1-Score=0.91

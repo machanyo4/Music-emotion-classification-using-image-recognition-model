@@ -3,6 +3,14 @@ import librosa
 import numpy as np
 import matplotlib.pyplot as plt
 
+plt.rcParams.update({
+    'font.size': 11,           # 全体のフォントサイズ
+    'axes.titlesize': 12,      # タイトルのフォントサイズ
+    'axes.labelsize': 11,      # 軸ラベルのフォントサイズ
+    'xtick.labelsize': 11,     # x軸の目盛りラベルのフォントサイズ
+    'ytick.labelsize': 11      # y軸の目盛りラベルのフォントサイズ
+})
+
 # パラメータ設定
 audio_path = '/chess/project/project1/music/MER_audio_taffc_dataset_wav/renamed/Q1/Q1.MT0000040632.wav'
 save_dir = '/local/home/matsubara/EfficientNetV2_music_emotion_ctlex/make_dataset/stft_img'
@@ -69,17 +77,3 @@ for i, frame in enumerate(windowed_frames.T):
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, f'frame_{i + 1}_dft.png'))
     plt.close()
-
-# 5. 最終的なスペクトログラム
-S = librosa.stft(y, n_fft=window_size, hop_length=hop_length, window='hann')
-S_dB = librosa.amplitude_to_db(np.abs(S), ref=np.max)
-plt.figure(figsize=(12, 6))
-librosa.display.specshow(S_dB, sr=sampling_rate, hop_length=hop_length, x_axis='time', y_axis='log', cmap='coolwarm')
-plt.colorbar(format='%+2.0f dB')
-# plt.title('Spectrogram')
-plt.tight_layout()
-plt.savefig(os.path.join(save_dir, 'spectrogram.png'))
-plt.close()
-
-# 出力ディレクトリの内容を確認
-os.listdir(save_dir)

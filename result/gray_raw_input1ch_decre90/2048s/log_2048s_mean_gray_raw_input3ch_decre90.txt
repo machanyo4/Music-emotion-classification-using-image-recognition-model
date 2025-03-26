@@ -14,3 +14,7 @@ Mean Accuracy: 94.80%
  [  2.  222.    0.    1. ]
  [  6.4   2.2 207.4   9. ]
  [  6.6   0.    9.8 208.6]]
+Q1: Precision=0.94, Recall=0.96, F1-Score=0.95
+Q2: Precision=0.97, Recall=0.99, F1-Score=0.98
+Q3: Precision=0.95, Recall=0.92, F1-Score=0.94
+Q4: Precision=0.94, Recall=0.93, F1-Score=0.94

@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 from sklearn.metrics import accuracy_score, confusion_matrix
-from dataset import MusicDatasets
 from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
 from torchvision.models import efficientnet_v2_s
@@ -11,13 +10,19 @@ from sklearn.model_selection import train_test_split
 # from architect.efficientnet_v2_s_test import efficientnet_v2_s
 from architect.adjust1ch import update_model_channels
 from architect.input_1ch import modify_input_layer_to_grayscale
+# Dataset の選択
+# from dataset1 import MusicDatasets
+# from dataset3 import MusicDatasets
+# from dataset import MusicDatasets
+# from dataset7 import MusicDatasets
+from dataset9 import MusicDatasets
 
 
 # データセットパスとモデルパス
-dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/grayscale"
-sets = '1536s'
-seed = 55
-kind = "gray_raw_1chs_decre90"
+dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/9grayscale"
+sets = '2048s'
+seed = 11
+kind = "gray_raw9_input1ch_decre90"
 model_path = "../model/Best_EfficientnetV2_" + sets + '_' + str(seed) + kind + ".pth"
 
 # ハイパーパラメータ
@@ -47,13 +52,13 @@ model = efficientnet_v2_s(weights=None)
 # model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 
 #--- input_1ch ------------------------------
-# model = modify_input_layer_to_grayscale(model)
-# model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
+model = modify_input_layer_to_grayscale(model)
+model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 #-------------------------------------
 
 # #--- gray_1ch -----------------------------------------------------------------------------------------
-model = update_model_channels(model)
-model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
+# model = update_model_channels(model)
+# model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 #--------------------------------------------------------------------------------------------------
 
 # 自作モデルの場合

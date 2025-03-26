@@ -22,10 +22,11 @@ warnings.filterwarnings("ignore", category=UserWarning, module="torch")
 
 # データセットパスとモデルパス
 dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/grayscale/" #grayscale/
-sets = '1024s'
+sets = '2048s'
 seed = 33
-kind = "gray_raw_input3ch_decre90"
+kind = "gray_raw_input1ch_decre90"
 model_path = "../model/Best_EfficientnetV2_" + sets + '_' + str(seed) + kind + ".pth"
+folder_name = 'gray_raw_input1ch_2048s_33'
 
 # デバイスの指定
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -40,11 +41,11 @@ transform = transforms.Compose(
         transforms.Resize((384,384)),
         transforms.ToTensor(),
         # grayscale1ch 画像の場合----
-        # transforms.Grayscale(num_output_channels=1),
-        # transforms.Normalize(mean=[0.5], std=[0.5]),
+        transforms.Grayscale(num_output_channels=1),
+        transforms.Normalize(mean=[0.5], std=[0.5]),
         # grayscale3ch 画像の場合---
-        transforms.Grayscale(num_output_channels=3),
-        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+        # transforms.Grayscale(num_output_channels=3),
+        # transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
         # calor 画像の場合---
         # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ]
@@ -55,11 +56,11 @@ test_loader = DataLoader(dataset=test_datasets, batch_size=batch_size, shuffle=F
 
 # モデルの構築
 model = efficientnet_v2_s(weights=None)
-model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
+# model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 
 #--- input_1ch ------------------------------
-# model = modify_input_layer_to_grayscale(model)
-# model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
+model = modify_input_layer_to_grayscale(model)
+model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 #-------------------------------------
 
 #--- gray_1chs -----------------------------------------------------------------------------------------
@@ -161,63 +162,77 @@ class_names = ['Q1', 'Q2', 'Q3', 'Q4']  # クラス名を定義
 for class_idx, img_tensors in correct_images.items():
     for idx, img_tensor in enumerate(img_tensors):
         # 3ch 画像の場合----
-        img = img_tensor.squeeze().cpu().numpy().transpose(1, 2, 0)
-        img = np.clip(img * 0.229 + 0.485, 0, 1)  # 正規化を元に戻す
+        # img = img_tensor.squeeze().cpu().numpy().transpose(1, 2, 0)
+        # img = np.clip(img * 0.229 + 0.485, 0, 1)  # 正規化を元に戻す
         # 1ch 画像の場合----
-        # img = img_tensor.squeeze().cpu().numpy()  # グレースケールは(H, W)
-        # img = np.clip(img * 0.5 + 0.5, 0, 1)  # 正規化を元に戻す
+        img = img_tensor.squeeze().cpu().numpy()  # グレースケールは(H, W)
+        img = np.clip(img * 0.5 + 0.5, 0, 1)  # 正規化を元に戻す
+        img = np.flipud(img)
 
         heatmap = grad_cam(model, img_tensor, 'features')
+        heatmap = np.flipud(heatmap)
         cam_img = show_cam_on_image(img, heatmap)
 
         # 元画像を保存
         plt.figure(figsize=(5, 5))
-        plt.imshow(img)
+        plt.imshow(img, origin='lower', cmap='gray')
         plt.title(f'Original Image {class_names[class_idx]}', fontsize=16)
-        plt.xlabel('Time', fontsize=14)
-        plt.ylabel('Frequency', fontsize=14)
-        plt.savefig(f'../result/heatmap/original_class_{class_names[class_idx]}_pred_{class_names[class_idx]}_{idx}.png', bbox_inches='tight')
+        plt.xlabel('Time index', fontsize=14)
+        plt.ylabel('Frequency index', fontsize=14)
+        plt.savefig('../result/heatmap/' + folder_name + f'original_class_{class_names[class_idx]}_pred_{class_names[class_idx]}_{idx}.png', bbox_inches='tight')
         plt.close()
 
         # ヒートマップを保存
         plt.figure(figsize=(5, 5))
-        plt.imshow(heatmap, cmap='jet')
+        ax = plt.gca()  # 現在の軸を取得
+        im = plt.imshow(heatmap, cmap='jet', origin='lower')
         plt.title(f'Grad-CAM {class_names[class_idx]}', fontsize=16)
-        plt.xlabel('Time', fontsize=14)
-        plt.ylabel('Frequency', fontsize=14)
-        plt.savefig(f'../result/heatmap/heatmap_class_{class_names[class_idx]}_pred_{class_names[class_idx]}_{idx}.png', bbox_inches='tight')
+        plt.xlabel('Time index', fontsize=14)
+        plt.ylabel('Frequency index', fontsize=14)
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.1)  # size: カラーバーの幅, pad: 隙間
+        cbar = plt.colorbar(im, cax=cax)
+        cbar.set_label("Activation Intensity", fontsize=14)
+        plt.savefig('../result/heatmap/' + folder_name + f'heatmap_class_{class_names[class_idx]}_pred_{class_names[class_idx]}_{idx}.png', bbox_inches='tight')
         plt.close()
 
 # 誤った予測画像の保存
 for class_idx, img_tensors in incorrect_images.items():
     for idx, img_tensor in enumerate(img_tensors):
         # 3ch 画像の場合----
-        img = img_tensor.squeeze().cpu().numpy().transpose(1, 2, 0)
-        img = np.clip(img * 0.229 + 0.485, 0, 1)  # 正規化を元に戻す
+        # img = img_tensor.squeeze().cpu().numpy().transpose(1, 2, 0)
+        # img = np.clip(img * 0.229 + 0.485, 0, 1)  # 正規化を元に戻す
         # 1ch 画像の場合----
-        # img = img_tensor.squeeze().cpu().numpy()  # グレースケールは(H, W)
-        # img = np.clip(img * 0.5 + 0.5, 0, 1)  # 正規化を元に戻す
+        img = img_tensor.squeeze().cpu().numpy()  # グレースケールは(H, W)
+        img = np.clip(img * 0.5 + 0.5, 0, 1)  # 正規化を元に戻す
+        img = np.flipud(img)
 
         pred_label = incorrect_preds[class_idx][idx]
         heatmap = grad_cam(model, img_tensor, 'features')
+        heatmap = np.flipud(heatmap)
         cam_img = show_cam_on_image(img, heatmap)
 
         # 元画像を保存（誤った予測ラベルもファイル名に付与）
         plt.figure(figsize=(5, 5))
-        plt.imshow(img)
+        plt.imshow(img, origin='lower', cmap='gray')
         plt.title(f'Original Image {class_names[class_idx]} (Pred: {class_names[pred_label]})', fontsize=16)
-        plt.xlabel('Time', fontsize=14)
-        plt.ylabel('Frequency', fontsize=14)
-        plt.savefig(f'../result/heatmap/original_class_{class_names[class_idx]}_pred_{class_names[pred_label]}_{idx}.png', bbox_inches='tight')
+        plt.xlabel('Time index', fontsize=14)
+        plt.ylabel('Frequency index', fontsize=14)
+        plt.savefig('../result/heatmap/' + folder_name + f'original_class_{class_names[class_idx]}_pred_{class_names[pred_label]}_{idx}.png', bbox_inches='tight')
         plt.close()
 
         # ヒートマップを保存（誤った予測ラベルもファイル名に付与）
         plt.figure(figsize=(5, 5))
-        plt.imshow(heatmap, cmap='jet')
+        ax = plt.gca()  # 現在の軸を取得
+        im = plt.imshow(heatmap, cmap='jet', origin='lower')
         plt.title(f'Grad-CAM {class_names[class_idx]} (Pred: {class_names[pred_label]})', fontsize=16)
-        plt.xlabel('Time', fontsize=14)
-        plt.ylabel('Frequency', fontsize=14)
-        plt.savefig(f'../result/heatmap/heatmap_class_{class_names[class_idx]}_pred_{class_names[pred_label]}_{idx}.png', bbox_inches='tight')
+        plt.xlabel('Time index', fontsize=14)
+        plt.ylabel('Frequency index', fontsize=14)
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.1)  # size: カラーバーの幅, pad: 隙間
+        cbar = plt.colorbar(im, cax=cax)
+        cbar.set_label("Activation Intensity", fontsize=14)
+        plt.savefig('../result/heatmap/' + folder_name + f'heatmap_class_{class_names[class_idx]}_pred_{class_names[pred_label]}_{idx}.png', bbox_inches='tight')
         plt.close()
 
 print("[LOG] Heatmaps of correct and incorrect predictions were successfully saved.")

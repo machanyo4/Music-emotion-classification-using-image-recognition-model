@@ -1,24 +1,30 @@
 import torch
 import torch.nn as nn
 from sklearn.metrics import accuracy_score, confusion_matrix
-from dataset import MusicDatasets
 from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
 from torchvision.models import efficientnet_v2_s
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import precision_recall_fscore_support
 # from architect.efficientnet_v2_s_test import efficientnet_v2_s
 from architect.adjust1ch import update_model_channels
 from architect.input_1ch import modify_input_layer_to_grayscale
+# Dataset の選択
+# from dataset1 import MusicDatasets
+# from dataset3 import MusicDatasets
+# from dataset import MusicDatasets
+# from dataset7 import MusicDatasets
+from dataset9 import MusicDatasets
 
 # データセットパスとモデルパス
-dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/grayscale"
+dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/9grayscale" #/grayscale
 sets = '2048s'
-kind = "gray_raw_input1ch_decre90"
+kind = "gray_raw9_input1ch_decre90"
 base_path = "../model/Best_EfficientnetV2_" + sets
 seeds = [11, 22, 33, 44, 55]
-model_paths = [base_path + '_' + str(i) + kind + '.pth' for i in seeds]
+model_paths = [base_path + '_' + str(i) + kind + '.pth' for i in seeds] #kind
 
 # ハイパーパラメータ
 batch_size = 64
@@ -57,7 +63,7 @@ for index, model_path in enumerate(model_paths):
     model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
     #-------------------------------------
 
-    #--- gray_1ch -----------------------------------------------------------------------------------------
+    #--- gray_1chs-----------------------------------------------------------------------------------------
     # model = update_model_channels(model)
     # model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
     #--------------------------------------------------------------------------------------------------
@@ -107,6 +113,23 @@ print(f"Mean Accuracy: {mean_accuracy * 100:.2f}%")
 mean_conf_matrix = sum_conf_matrix/len(model_paths)
 print("--- Mean Confusion Matrix ---")
 print(mean_conf_matrix)
+
+# 混同行列から真のラベルと予測ラベルを再現する
+y_true = []
+y_pred = []
+
+for i, row in enumerate(mean_conf_matrix):
+    for j, value in enumerate(row):
+        y_true.extend([i] * int(value))
+        y_pred.extend([j] * int(value))
+
+# precision, recall, f1-score を計算
+class_names = ['Q1', 'Q2', 'Q3', 'Q4']
+precision, recall, f1, support = precision_recall_fscore_support(y_true, y_pred, labels=range(len(class_names)))
+
+# 結果を表示
+for i, class_name in enumerate(class_names):
+    print(f"{class_name}: Precision={precision[i]:.2f}, Recall={recall[i]:.2f}, F1-Score={f1[i]:.2f}")
 
 # 混同行列を割合に変換
 conf_matrix_percent = mean_conf_matrix / mean_conf_matrix.sum(axis=1, keepdims=True) * 100

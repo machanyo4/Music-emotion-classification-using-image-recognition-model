@@ -3,7 +3,6 @@ from torch.utils.data import Dataset
 import os
 import random
 from PIL import Image
-from dataset import MusicDatasets
 import torch.nn as nn
 from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
@@ -23,13 +22,19 @@ from torchvision.models import efficientnet_v2_s
 #　1ch適応モジュールの読み込み
 from architect.adjust1ch import update_model_channels
 from architect.input_1ch import modify_input_layer_to_grayscale
+# Dataset の選択
+# from dataset1 import MusicDatasets
+# from dataset3 import MusicDatasets
+# from dataset import MusicDatasets
+# from dataset7 import MusicDatasets
+from dataset9 import MusicDatasets
 
 # Dir_Path
-dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/" #grayscale
+dataset_path = "/chess/project/project1/music/MER_audio_taffc_dataset_wav/spec/9grayscale" #grayscale
 os.makedirs('../model', exist_ok=True)
-sets = '1536s'
-seed = 55
-kind = "color_decre90"
+sets = '2048s'
+seed = 11
+kind = "gray_raw9_input1ch_decre90"
 os.makedirs('../result/' + kind + '/' + sets, exist_ok=True)
 
 # ハイパーパラメータ
@@ -44,13 +49,13 @@ transform = transforms.Compose(
         transforms.Resize((384,384)),
         transforms.ToTensor(),
         # grayscale1ch 画像の場合----
-        # transforms.Grayscale(num_output_channels=1),
-        # transforms.Normalize(mean=[0.5], std=[0.5]),
+        transforms.Grayscale(num_output_channels=1),
+        transforms.Normalize(mean=[0.5], std=[0.5]),
         # grayscale3ch 画像の場合---
         # transforms.Grayscale(num_output_channels=3),
         # transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
         # calor 画像の場合---
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ]
 )
 
@@ -66,21 +71,21 @@ test_loader = DataLoader(dataset = test_datasets, batch_size=batch_size, shuffle
 
 # モデルの構築
 # 既存モデルの場合
-model = efficientnet_v2_s(weights='IMAGENET1K_V1')  # 'IMAGENET1K_V1'
-model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
+# model = efficientnet_v2_s(weights='IMAGENET1K_V1')  # 'IMAGENET1K_V1'
+# model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 
 #--- input_1ch ------------------------------
-# model = efficientnet_v2_s(weights='IMAGENET1K_V1')
-# model = modify_input_layer_to_grayscale(model)
-# model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
+model = efficientnet_v2_s(weights='IMAGENET1K_V1')
+model = modify_input_layer_to_grayscale(model)
+model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 #-------------------------------------
 
 
 #--- gray_1chs ------------------------------
 # model = efficientnet_v2_s(weights=None)
 # model = update_model_channels(model)
-# # plmodel_path = '/local/home/matsubara/EfficientNetV2_music_emotion_ctlex/model/prior/imagenet_priorln.pth'
-# # model.load_state_dict(torch.load(plmodel_path))
+# plmodel_path = '/local/home/matsubara/EfficientNetV2_music_emotion_ctlex/model/prior/imagenet_priorln.pth'
+# model.load_state_dict(torch.load(plmodel_path))
 # model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新しいクラス数に変更
 #-------------------------------------
 
@@ -106,7 +111,6 @@ model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 4)  # 新し�
 
 # print(f"Total number of trainable parameters: {count_parameters(model):,}")
 # ----------------------------------------------------------------------------------
-
 
 # デバイスの指定
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
